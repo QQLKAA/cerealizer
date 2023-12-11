@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.27)
 
 project(cerealizer VERSION 0.0 LANGUAGES CXX)
 
+option(BUILD_TESTS "Build tests" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -19,5 +21,7 @@ else()
     message(FATAL_ERROR "Cannot detect endianness")
 endif()
 
-enable_testing()
-add_subdirectory(tests)
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
