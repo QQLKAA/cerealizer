@@ -39,6 +39,7 @@ void SerializePrimitive(Context &context, const T& data)
     }
 
     *reinterpret_cast<T*>(&context.buffer[context.cursor]) = data;
+    context.cursor += sizeof(T);
 }
 
 template<>
@@ -105,6 +106,8 @@ bool DeserializePrimitive(Context &context, T& data)
     }
 
     data = *reinterpret_cast<T*>(&context.buffer[context.cursor]);
+    context.cursor += sizeof(T);
+
     return true;
 }
 
