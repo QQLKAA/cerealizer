@@ -7,8 +7,8 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(tests tests_test.cpp)
-target_link_libraries(tests GTest::gtest_main)
+add_executable(tests primitives_test.cpp)
+target_link_libraries(tests GTest::gtest_main cerealizer)
 
 include(GoogleTest)
 gtest_discover_tests(tests)

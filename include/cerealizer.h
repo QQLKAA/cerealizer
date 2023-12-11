@@ -14,7 +14,7 @@ namespace Cerealizer
 struct Context
 {
     std::vector<uint8_t> buffer;
-    size_t cursor;
+    size_t cursor{ 0 };
 };
 
 template<typename T>
