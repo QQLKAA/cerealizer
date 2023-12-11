@@ -42,9 +42,57 @@ void SerializePrimitive(Context &context, const T& data)
 }
 
 template<>
+void Serialize(Context &context, const uint8_t& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
+void Serialize(Context &context, const uint16_t& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
 void Serialize(Context &context, const uint32_t& data)
 {
     SerializePrimitive(context, data);
+}
+
+template<>
+void Serialize(Context &context, const uint64_t& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
+void Serialize(Context &context, const int8_t& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
+void Serialize(Context &context, const int16_t& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
+void Serialize(Context &context, const int32_t& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
+void Serialize(Context &context, const int64_t& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
+void Serialize(Context &context, const bool& data)
+{
+    SerializePrimitive(context, static_cast<uint8_t>(data));
 }
 
 template<typename T>
@@ -61,9 +109,60 @@ bool DeserializePrimitive(Context &context, T& data)
 }
 
 template<>
+bool Deserialize(Context &context, uint8_t& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
+bool Deserialize(Context &context, uint16_t& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
 bool Deserialize(Context &context, uint32_t& data)
 {
     return DeserializePrimitive(context, data);
+}
+
+template<>
+bool Deserialize(Context &context, uint64_t& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
+bool Deserialize(Context &context, int8_t& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
+bool Deserialize(Context &context, int16_t& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
+bool Deserialize(Context &context, int32_t& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
+bool Deserialize(Context &context, int64_t& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
+bool Deserialize(Context &context, bool& data)
+{
+    uint8_t tmp;
+    bool result = DeserializePrimitive(context, tmp);
+    data = static_cast<bool>(tmp);
+    return result;
 }
 
 }
