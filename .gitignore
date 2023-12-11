@@ -33,3 +33,6 @@
 
 # Cmake build directory
 build/
+
+# IDE files
+.vscode/
