@@ -160,3 +160,60 @@ TEST(PrimitivesTest, HandlesMultipleValues)
     ASSERT_EQ(x2, y2);
     ASSERT_EQ(x3, y3);
 }
+
+TEST(PrimitivesTest, HandlesVariadicTemplateSerialization)
+{
+    Context ctx;
+
+    uint8_t x1 = 10, x2 = 15, y1, y2;
+
+    Serialize(ctx, x1, x2);
+    EXPECT_EQ(ctx.cursor, 2);
+    EXPECT_EQ(ctx.buffer[0], x1);
+    EXPECT_EQ(ctx.buffer[1], x2);
+
+    ctx.cursor = 0;
+    EXPECT_TRUE(Deserialize(ctx, y1));
+    EXPECT_TRUE(Deserialize(ctx, y2));
+    EXPECT_EQ(ctx.cursor, 2);
+
+    EXPECT_EQ(x1, y1);
+    EXPECT_EQ(x2, y2);
+}
+
+TEST(PrimitivesTest, HandlesVariadicTemplateDeserialization)
+{
+    Context ctx;
+
+    uint8_t x1 = 10, x2 = 15, y1, y2;
+
+    Serialize(ctx, x1);
+    Serialize(ctx, x2);
+    EXPECT_EQ(ctx.cursor, 2);
+    EXPECT_EQ(ctx.buffer[0], x1);
+    EXPECT_EQ(ctx.buffer[1], x2);
+
+    ctx.cursor = 0;
+    EXPECT_TRUE(Deserialize(ctx, y1, y2));
+    EXPECT_EQ(ctx.cursor, 2);
+
+    EXPECT_EQ(x1, y1);
+    EXPECT_EQ(x2, y2);
+}
+
+TEST(PrimitivesTest, HandlesVariadicTemplate)
+{
+    Context ctx;
+
+    uint32_t x1 = 5, y1;
+    std::string x2 = "abc", y2;
+
+    Serialize(ctx, x1, x2);
+    EXPECT_EQ(ctx.cursor, sizeof(x1) + sizeof(uint32_t) + 3);
+    ctx.cursor = 0;
+    EXPECT_TRUE(Deserialize(ctx, y1, y2));
+    EXPECT_EQ(ctx.cursor, sizeof(x1) + sizeof(uint32_t) + 3);
+
+    EXPECT_EQ(x1, y1);
+    EXPECT_EQ(x2, y2);
+}

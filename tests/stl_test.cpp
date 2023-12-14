@@ -93,15 +93,12 @@ TEST(StlTest, HandlesComposition)
 
         void Serialize(Context& context) const
         {
-            ::Serialize(context, name);
-            ::Serialize(context, quality);
+            ::Serialize(context, name, quality);
         }
 
         bool Deserialize(Context& context)
         {
-            if (!::Deserialize(context, name)) return false;
-            if (!::Deserialize(context, quality)) return false;
-            return true;
+            return ::Deserialize(context, name, quality);
         }
         
         bool operator==(const Item& other) const
@@ -116,15 +113,12 @@ TEST(StlTest, HandlesComposition)
 
         void Serialize(Context& context) const
         {
-            ::Serialize(context, x);
-            ::Serialize(context, y);
+            ::Serialize(context, x, y);
         }
 
         bool Deserialize(Context& context)
         {
-            if (!::Deserialize(context, x)) return false;
-            if (!::Deserialize(context, y)) return false;
-            return true;
+            return ::Deserialize(context, x, y);
         }
 
         bool operator==(const Vector2i& other) const
@@ -140,15 +134,12 @@ TEST(StlTest, HandlesComposition)
 
         void Serialize(Context& context) const
         {
-            ::Serialize(context, position);
-            ::Serialize(context, inventory);
+            ::Serialize(context, position, inventory);
         }
 
         bool Deserialize(Context& context)
         {
-            if (!::Deserialize(context, position)) return false;
-            if (!::Deserialize(context, inventory)) return false;
-            return true;
+            return ::Deserialize(context, position, inventory);
         }
 
         bool operator==(const Player& other) const

@@ -28,10 +28,28 @@ inline void Serialize(Context& context, const T& data)
     data.Serialize(context);
 }
 
+template<typename T, typename... Args>
+inline void Serialize(Context& context, const T& data, const Args&... args)
+{
+    Serialize(context, data);
+    Serialize(context, args...);
+}
+
 template<typename T>
 inline bool Deserialize(Context &context,  T& data)
 {
     return data.Deserialize(context);
+}
+
+template<typename T, typename... Args>
+inline bool Deserialize(Context &context, T& data, Args&... args)
+{
+    if (!Deserialize(context, data))
+    {
+        return false;
+    }
+
+    return Deserialize(context, args...);
 }
 
 template<typename T>
