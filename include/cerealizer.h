@@ -16,12 +16,6 @@
 namespace Cerealizer
 {
 
-struct Context2
-{
-    std::vector<uint8_t> buffer;
-    size_t cursor{ 0 };
-};
-
 class Context
 {
 public:
@@ -41,35 +35,16 @@ public:
     const std::vector<uint8_t>& GetBuffer() const { return _buffer; }
 
     template<typename T>
-    void Serialize(const T& data)
-    {
-        data.Serialize(*this);
-    }
+    void Serialize(const T& data);
 
     template<typename T, typename... Args>
-    void Serialize(const T& data, const Args&... args)
-    {
-        Serialize(data);
-        Serialize(args...);
-    }
+    void Serialize(const T& data, const Args&... args);
 
     template<typename T>
-    bool Deserialize(T& data)
-    {
-        return data.Deserialize(*this);
-    }
+    bool Deserialize(T& data);
     
     template<typename T, typename... Args>
-    bool Deserialize(T& data, Args&... args)
-    {
-        if (!Deserialize(data))
-        {
-            return false;
-        }
-
-        return Deserialize(args...);
-    }
-    
+    bool Deserialize(T& data, Args&... args);
     
     template<typename T, typename U>
     void Serialize(const std::pair<T, U>& data);
@@ -97,70 +72,114 @@ public:
 
 private:
     template<typename T>
-    void _SerializePrimitive(const T& data)
-    {
-        size_t spaceAvailable = _buffer.size() - _cursor;
-        if (spaceAvailable < sizeof(T))
-        {
-            _buffer.resize(_cursor + sizeof(T));
-        }
-
-        *reinterpret_cast<T*>(&_buffer[_cursor]) = data;
-        _cursor += sizeof(T);
-    }
+    void _SerializePrimitive(const T& data);
 
     template<typename T>
-    void _SerializeContainer(const T& data)
-    {
-        assert(data.size() <= std::numeric_limits<uint32_t>::max());
-
-        Serialize(static_cast<uint32_t>(data.size()));
-        for (const auto& element : data)
-        {
-            Serialize(element);
-        }
-    }
+    void _SerializeContainer(const T& data);
     
     template<typename T>
-    bool _DeserializePrimitive(T& data)
-    {
-        size_t spaceRemaining = _buffer.size() - _cursor; 
-        if (spaceRemaining < sizeof(T))
-        {
-            return false;
-        }
-
-        data = *reinterpret_cast<T*>(&_buffer[_cursor]);
-        _cursor += sizeof(T);
-
-        return true;
-    }
+    bool _DeserializePrimitive(T& data);
 
     template<typename T>
-    bool _DeserializeContainer(T& data)
-    {
-        uint32_t length;
-        if (!Deserialize(length))
-        {
-            return false;
-        }
-
-        data.resize(length);
-
-        for (uint32_t i = 0; i < length; i++)
-        {
-            if (!Deserialize(data[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    bool _DeserializeContainer(T& data);
 
     std::vector<uint8_t> _buffer;
     size_t _cursor{ 0 };
 };
+
+
+template<typename T>
+inline void Context::Serialize(const T& data)
+{
+    data.Serialize(*this);
+}
+
+template<typename T, typename... Args>
+inline void Context::Serialize(const T& data, const Args&... args)
+{
+    Serialize(data);
+    Serialize(args...);
+}
+
+template<typename T>
+inline bool Context::Deserialize(T& data)
+{
+    return data.Deserialize(*this);
+}
+
+template<typename T, typename... Args>
+inline bool Context::Deserialize(T& data, Args&... args)
+{
+    if (!Deserialize(data))
+    {
+        return false;
+    }
+
+    return Deserialize(args...);
+}
+
+template<typename T>
+inline void Context::_SerializePrimitive(const T& data)
+{
+    size_t spaceAvailable = _buffer.size() - _cursor;
+    if (spaceAvailable < sizeof(T))
+    {
+        _buffer.resize(_cursor + sizeof(T));
+    }
+
+    *reinterpret_cast<T*>(&_buffer[_cursor]) = data;
+    _cursor += sizeof(T);
+}
+
+template<typename T>
+inline void Context::_SerializeContainer(const T& data)
+{
+    assert(data.size() <= std::numeric_limits<uint32_t>::max());
+
+    Serialize(static_cast<uint32_t>(data.size()));
+    for (const auto& element : data)
+    {
+        Serialize(element);
+    }
+}
+
+template<typename T>
+inline bool Context::_DeserializePrimitive(T& data)
+{
+    size_t spaceRemaining = _buffer.size() - _cursor; 
+    if (spaceRemaining < sizeof(T))
+    {
+        return false;
+    }
+
+    data = *reinterpret_cast<T*>(&_buffer[_cursor]);
+    _cursor += sizeof(T);
+
+    return true;
+}
+
+template<typename T>
+inline bool Context::_DeserializeContainer(T& data)
+{
+    uint32_t length;
+    if (!Deserialize(length))
+    {
+        return false;
+    }
+
+    data.resize(length);
+
+    for (uint32_t i = 0; i < length; i++)
+    {
+        if (!Deserialize(data[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 template<>
 inline void Context::Serialize(const uint8_t& data)
