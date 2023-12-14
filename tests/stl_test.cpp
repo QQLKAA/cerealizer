@@ -41,3 +41,15 @@ TEST(StlTest, HandlesInvalidString)
 
     EXPECT_FALSE(Deserialize(ctx, b));
 }
+
+TEST(StlTest, HandlesVector)
+{
+    std::vector<uint32_t> a = { 1, 2, 3 }, b;
+    Context ctx;
+
+    Serialize(ctx, a);
+    ctx.cursor = 0;
+    EXPECT_TRUE(Deserialize(ctx, b));
+
+    EXPECT_EQ(a, b);
+}

@@ -106,16 +106,28 @@ inline void Serialize(Context &context, const char& data)
     SerializePrimitive(context, byte);
 }
 
-template<>
-inline void Serialize(Context &context, const std::string& data)
+template<typename T>
+inline void SerializeContainer(Context &context, const T& data)
 {
     assert(data.size() <= std::numeric_limits<uint32_t>::max());
 
     Serialize(context, static_cast<uint32_t>(data.size()));
-    for (char ch : data)
+    for (const auto& element : data)
     {
-        Serialize(context, ch);
+        Serialize(context, element);
     }
+}
+
+template<>
+inline void Serialize(Context &context, const std::string& data)
+{
+    SerializeContainer(context, data);
+}
+
+template<typename T>
+inline void Serialize(Context &context, const std::vector<T>& data)
+{
+    SerializeContainer(context, data);
 }
 
 template<typename T>
@@ -204,8 +216,9 @@ inline bool Deserialize(Context &context, char& data)
     return true;
 }
 
-template<>
-inline bool Deserialize(Context &context, std::string& data)
+
+template<typename T>
+inline bool DeserializeContainer(Context &context, T& data)
 {
     uint32_t length;
     if (!Deserialize(context, length))
@@ -224,6 +237,18 @@ inline bool Deserialize(Context &context, std::string& data)
     }
 
     return true;
+}
+
+template<>
+inline bool Deserialize(Context &context, std::string& data)
+{
+    return DeserializeContainer(context, data);
+}
+
+template<typename T>
+inline bool Deserialize(Context &context, std::vector<T>& data)
+{
+    return DeserializeContainer(context, data);
 }
 
 }
