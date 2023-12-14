@@ -31,7 +31,12 @@ public:
     
     void Rewind() { _cursor = 0; }
 
-    void SetBuffer(std::vector<uint8_t> buffer) { _buffer = std::move(buffer); }
+    void SetBuffer(std::vector<uint8_t> buffer) 
+    { 
+        _buffer = std::move(buffer);
+        Rewind();
+    }
+
     const std::vector<uint8_t>& GetBuffer() const { return _buffer; }
 
     template<typename T>
