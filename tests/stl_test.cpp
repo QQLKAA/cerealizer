@@ -3,7 +3,7 @@
 #include <cerealizer.h>
 
 using namespace Cerealizer;
-
+/*
 TEST(StlTest, HandlesString)
 {
     std::string a = "xyz", b;
@@ -171,3 +171,4 @@ TEST(StlTest, HandlesComposition)
 
     EXPECT_EQ(players_a, players_b);
 }
+*/

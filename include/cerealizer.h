@@ -84,16 +84,16 @@ public:
     void Serialize(const std::unordered_map<T, U> &data);
 
     template<typename T, typename U>
-    bool Context::Deserialize(std::pair<T, U>& data);
+    bool Deserialize(std::pair<T, U>& data);
 
     template<typename T>
-    bool Context::Deserialize(std::vector<T>& data);
+    bool Deserialize(std::vector<T>& data);
 
     template<typename T, typename U>
-    inline bool Context::Deserialize(std::map<T, U>& data);
+    bool Deserialize(std::map<T, U>& data);
 
     template<typename T, typename U>
-    inline bool Context::Deserialize(std::unordered_map<T, U>& data);
+    bool Deserialize(std::unordered_map<T, U>& data);
 
 private:
     template<typename T>
@@ -105,7 +105,7 @@ private:
             _buffer.resize(_cursor + sizeof(T));
         }
 
-        *reinterpret_cast<T*>(&_buffer[context.cursor]) = data;
+        *reinterpret_cast<T*>(&_buffer[_cursor]) = data;
         _cursor += sizeof(T);
     }
 
@@ -114,24 +114,24 @@ private:
     {
         assert(data.size() <= std::numeric_limits<uint32_t>::max());
 
-        Serialize(context, static_cast<uint32_t>(data.size()));
+        Serialize(static_cast<uint32_t>(data.size()));
         for (const auto& element : data)
         {
-            Serialize(context, element);
+            Serialize(element);
         }
     }
     
     template<typename T>
     bool _DeserializePrimitive(T& data)
     {
-        size_t spaceRemaining = context.buffer.size() - context.cursor; 
+        size_t spaceRemaining = _buffer.size() - _cursor; 
         if (spaceRemaining < sizeof(T))
         {
             return false;
         }
 
-        data = *reinterpret_cast<T*>(&context.buffer[context.cursor]);
-        context.cursor += sizeof(T);
+        data = *reinterpret_cast<T*>(&_buffer[_cursor]);
+        _cursor += sizeof(T);
 
         return true;
     }
@@ -357,12 +357,12 @@ inline bool Context::Deserialize(char& data)
 template<typename T, typename U>
 inline bool Context::Deserialize(std::pair<T, U>& data)
 {
-    if (!Deserialize(context, data.first))
+    if (!Deserialize(data.first))
     {
         return false;
     }
 
-    if (!Deserialize(context, data.second))
+    if (!Deserialize(data.second))
     {
         return false;
     }
