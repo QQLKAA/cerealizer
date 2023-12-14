@@ -113,6 +113,30 @@ TEST(PrimitivesTest, HandlesBoolean)
     EXPECT_EQ(x, y);
 }
 
+TEST(PrimitivesTest, HandlesFloat)
+{
+    Context ctx;
+    float x = 12.34f, y;
+
+    Serialize(ctx, x);
+    ctx.cursor = 0;
+    EXPECT_TRUE(Deserialize(ctx, y));
+
+    EXPECT_EQ(x, y);
+}
+
+TEST(PrimitivesTest, HandlesDouble)
+{
+    Context ctx;
+    double x = 12.34, y;
+    
+    Serialize(ctx, x);
+    ctx.cursor = 0;
+    EXPECT_TRUE(Deserialize(ctx, y));
+
+    EXPECT_EQ(x, y);
+}
+
 TEST(PrimitivesTest, HandlesMultipleValues)
 {
     Context ctx;

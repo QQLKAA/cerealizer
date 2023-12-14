@@ -96,6 +96,18 @@ inline void Serialize(Context &context, const int64_t& data)
 }
 
 template<>
+inline void Serialize(Context &context, const float& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
+inline void Serialize(Context &context, const double& data)
+{
+    SerializePrimitive(context, data);
+}
+
+template<>
 inline void Serialize(Context &context, const bool& data)
 {
     SerializePrimitive(context, static_cast<uint8_t>(data));
@@ -210,6 +222,18 @@ inline bool Deserialize(Context &context, int32_t& data)
 
 template<>
 inline bool Deserialize(Context &context, int64_t& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
+inline bool Deserialize(Context &context, float& data)
+{
+    return DeserializePrimitive(context, data);
+}
+
+template<>
+inline bool Deserialize(Context &context, double& data)
 {
     return DeserializePrimitive(context, data);
 }
