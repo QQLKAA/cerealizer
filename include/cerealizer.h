@@ -37,6 +37,12 @@ public:
         Rewind();
     }
 
+    void ClearBuffer()
+    {
+        _buffer.clear();
+        Rewind();
+    }
+
     const std::vector<uint8_t>& GetBuffer() const { return _buffer; }
 
     template<typename T>

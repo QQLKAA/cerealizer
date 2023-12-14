@@ -11,7 +11,7 @@ TEST(GeneralTest, CopyingBufferBetweenContexts)
 
     ctxA.Serialize(a);
     
-    ctxB.SetBuffer(ctxB.GetBuffer());
+    ctxB.SetBuffer(ctxA.GetBuffer());
 
     EXPECT_TRUE(ctxB.Deserialize(b));
     EXPECT_EQ(a, b);
@@ -61,4 +61,40 @@ TEST(GeneralTest, RewindAllowsReadingTwice)
 
     EXPECT_TRUE(ctxB.Deserialize(c));
     EXPECT_EQ(a, c);
+}
+
+TEST(GeneralTest, DeserializationWithoutRewindShouldFail)
+{
+    Context ctx;
+
+    uint32_t a = 18, b;
+
+    ctx.Serialize(a);
+    EXPECT_FALSE(ctx.Deserialize(b));
+}
+
+TEST(GeneralTest, DeserializationAfterClearShouldFail)
+{
+    Context ctx;
+
+    uint32_t a = 5, b;
+
+    ctx.Serialize(a);
+    ctx.ClearBuffer();
+    EXPECT_FALSE(ctx.Deserialize(b));
+}
+
+TEST(GeneralTest, ClearingShouldResetBuffer)
+{
+    Context ctx;
+
+    uint32_t a = 5, b;
+
+    ctx.Serialize(std::string("abcdefghij"));
+    ctx.ClearBuffer();
+    ctx.Serialize(a);
+    ctx.Rewind();
+    
+    EXPECT_TRUE(ctx.Deserialize(b));
+    EXPECT_EQ(a, b);
 }
