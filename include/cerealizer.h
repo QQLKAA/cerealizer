@@ -4,7 +4,9 @@
 #include <cassert>
 #include <cstdint>
 #include <limits>
+#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #ifndef CEREALIZER_LITTLE_ENDIAN
@@ -106,6 +108,13 @@ inline void Serialize(Context &context, const char& data)
     SerializePrimitive(context, byte);
 }
 
+template<typename T, typename U>
+inline void Serialize(Context &context, const std::pair<T, U>& data)
+{
+    Serialize(context, data.first);
+    Serialize(context, data.second);
+}
+
 template<typename T>
 inline void SerializeContainer(Context &context, const T& data)
 {
@@ -126,6 +135,18 @@ inline void Serialize(Context &context, const std::string& data)
 
 template<typename T>
 inline void Serialize(Context &context, const std::vector<T>& data)
+{
+    SerializeContainer(context, data);
+}
+
+template<typename T, typename U>
+inline void Serialize(Context &context, const std::map<T, U>& data)
+{
+    SerializeContainer(context, data);
+}
+
+template<typename T, typename U>
+inline void Serialize(Context &context, const std::unordered_map<T, U>& data)
 {
     SerializeContainer(context, data);
 }
@@ -216,6 +237,21 @@ inline bool Deserialize(Context &context, char& data)
     return true;
 }
 
+template<typename T, typename U>
+inline bool Deserialize(Context &context, std::pair<T, U>& data)
+{
+    if (!Deserialize(context, data.first))
+    {
+        return false;
+    }
+
+    if (!Deserialize(context, data.second))
+    {
+        return false;
+    }
+
+    return true;
+}
 
 template<typename T>
 inline bool DeserializeContainer(Context &context, T& data)
@@ -249,6 +285,52 @@ template<typename T>
 inline bool Deserialize(Context &context, std::vector<T>& data)
 {
     return DeserializeContainer(context, data);
+}
+
+template<typename T, typename U>
+inline bool Deserialize(Context &context, std::map<T, U>& data)
+{
+    uint32_t length;
+    if (!Deserialize(context, length))
+    {
+        return false;
+    }
+
+    for (uint32_t i = 0; i < length; i++)
+    {
+        std::pair<T, U> kvPair;
+        if (!Deserialize(context, kvPair))
+        {
+            return false;
+        }
+
+        data.emplace(kvPair);
+    }
+
+    return true;
+}
+
+template<typename T, typename U>
+inline bool Deserialize(Context &context, std::unordered_map<T, U>& data)
+{
+    uint32_t length;
+    if (!Deserialize(context, length))
+    {
+        return false;
+    }
+
+    for (uint32_t i = 0; i < length; i++)
+    {
+        std::pair<T, U> kvPair;
+        if (!Deserialize(context, kvPair))
+        {
+            return false;
+        }
+
+        data.emplace(kvPair);
+    }
+
+    return true;
 }
 
 }
