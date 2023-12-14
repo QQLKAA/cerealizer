@@ -62,12 +62,12 @@ public:
     template<typename T, typename... Args>
     bool Deserialize(T& data, Args&... args)
     {
-        if (!data.Deserialize(*this))
+        if (!Deserialize(data))
         {
             return false;
         }
 
-        return data.Deserialize(args...);
+        return Deserialize(args...);
     }
     
     
@@ -266,11 +266,6 @@ inline void Context::Serialize(const std::unordered_map<T, U>& data)
     _SerializeContainer(data);
 }
 
-
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
 template<>
 inline bool Context::Deserialize(uint8_t& data)
 {
