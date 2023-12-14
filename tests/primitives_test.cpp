@@ -11,7 +11,7 @@ TEST(PrimitivesTest, HandlesUint8)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -23,7 +23,7 @@ TEST(PrimitivesTest, HandlesUint16)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -35,7 +35,7 @@ TEST(PrimitivesTest, HandlesUint32)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -48,7 +48,7 @@ TEST(PrimitivesTest, HandlesUint64)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -60,7 +60,7 @@ TEST(PrimitivesTest, HandlesInt8)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -72,7 +72,7 @@ TEST(PrimitivesTest, HandlesInt16)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -84,7 +84,7 @@ TEST(PrimitivesTest, HandlesInt32)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -96,7 +96,7 @@ TEST(PrimitivesTest, HandlesInt64)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -108,7 +108,7 @@ TEST(PrimitivesTest, HandlesBoolean)
 
     Serialize(ctx, x);
     ctx.cursor = 0;
-    Deserialize(ctx, y);
+    EXPECT_TRUE(Deserialize(ctx, y));
 
     EXPECT_EQ(x, y);
 }
@@ -127,9 +127,9 @@ TEST(PrimitivesTest, HandlesMultipleValues)
     ASSERT_EQ(ctx.cursor, sizeof(int32_t) + sizeof(int8_t) + sizeof(int16_t));
 
     ctx.cursor = 0;
-    Deserialize(ctx, y1);
-    Deserialize(ctx, y2);
-    Deserialize(ctx, y3);
+    EXPECT_TRUE(Deserialize(ctx, y1));
+    EXPECT_TRUE(Deserialize(ctx, y2));
+    EXPECT_TRUE(Deserialize(ctx, y3));
     ASSERT_EQ(ctx.cursor, sizeof(int32_t) + sizeof(int8_t) + sizeof(int16_t));
 
     ASSERT_EQ(x1, y1);
