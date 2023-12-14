@@ -16,260 +16,335 @@
 namespace Cerealizer
 {
 
-struct Context
+struct Context2
 {
     std::vector<uint8_t> buffer;
     size_t cursor{ 0 };
 };
 
-template<typename T>
-inline void Serialize(Context& context, const T& data)
+class Context
 {
-    data.Serialize(context);
-}
+public:
+    Context() = default;
+    Context(std::vector<uint8_t> buffer)
+        : _buffer(std::move(buffer)) {}
+    
+    Context(Context&) = delete;
+    Context& operator=(Context&) = delete;
 
-template<typename T, typename... Args>
-inline void Serialize(Context& context, const T& data, const Args&... args)
-{
-    Serialize(context, data);
-    Serialize(context, args...);
-}
+    Context(Context&&) = default;
+    Context& operator=(Context&&) = default;
+    
+    void Rewind() { _cursor = 0; }
 
-template<typename T>
-inline bool Deserialize(Context &context,  T& data)
-{
-    return data.Deserialize(context);
-}
+    void SetBuffer(std::vector<uint8_t> buffer) { _buffer = std::move(buffer); }
+    const std::vector<uint8_t>& GetBuffer() const { return _buffer; }
 
-template<typename T, typename... Args>
-inline bool Deserialize(Context &context, T& data, Args&... args)
-{
-    if (!Deserialize(context, data))
+    template<typename T>
+    void Serialize(const T& data)
     {
-        return false;
+        data.Serialize(*this);
     }
 
-    return Deserialize(context, args...);
-}
-
-template<typename T>
-inline void SerializePrimitive(Context &context, const T& data)
-{
-    size_t spaceAvailable = context.buffer.size() - context.cursor;
-    if (spaceAvailable < sizeof(T))
+    template<typename T, typename... Args>
+    void Serialize(const T& data, const Args&... args)
     {
-        context.buffer.resize(context.cursor + sizeof(T));
+        Serialize(data);
+        Serialize(args...);
     }
 
-    *reinterpret_cast<T*>(&context.buffer[context.cursor]) = data;
-    context.cursor += sizeof(T);
-}
+    template<typename T>
+    bool Deserialize(T& data)
+    {
+        return data.Deserialize(*this);
+    }
+    
+    template<typename T, typename... Args>
+    bool Deserialize(T& data, Args&... args)
+    {
+        if (!data.Deserialize(*this))
+        {
+            return false;
+        }
+
+        return data.Deserialize(args...);
+    }
+    
+    
+    template<typename T, typename U>
+    void Serialize(const std::pair<T, U>& data);
+
+    template<typename T>
+    void Serialize(const std::vector<T>& data);
+
+    template<typename T, typename U>
+    void Serialize(const std::map<T, U>& data);
+
+    template<typename T, typename U>
+    void Serialize(const std::unordered_map<T, U> &data);
+
+    template<typename T, typename U>
+    bool Context::Deserialize(std::pair<T, U>& data);
+
+    template<typename T>
+    bool Context::Deserialize(std::vector<T>& data);
+
+    template<typename T, typename U>
+    inline bool Context::Deserialize(std::map<T, U>& data);
+
+    template<typename T, typename U>
+    inline bool Context::Deserialize(std::unordered_map<T, U>& data);
+
+private:
+    template<typename T>
+    void _SerializePrimitive(const T& data)
+    {
+        size_t spaceAvailable = _buffer.size() - _cursor;
+        if (spaceAvailable < sizeof(T))
+        {
+            _buffer.resize(_cursor + sizeof(T));
+        }
+
+        *reinterpret_cast<T*>(&_buffer[context.cursor]) = data;
+        _cursor += sizeof(T);
+    }
+
+    template<typename T>
+    void _SerializeContainer(const T& data)
+    {
+        assert(data.size() <= std::numeric_limits<uint32_t>::max());
+
+        Serialize(context, static_cast<uint32_t>(data.size()));
+        for (const auto& element : data)
+        {
+            Serialize(context, element);
+        }
+    }
+    
+    template<typename T>
+    bool _DeserializePrimitive(T& data)
+    {
+        size_t spaceRemaining = context.buffer.size() - context.cursor; 
+        if (spaceRemaining < sizeof(T))
+        {
+            return false;
+        }
+
+        data = *reinterpret_cast<T*>(&context.buffer[context.cursor]);
+        context.cursor += sizeof(T);
+
+        return true;
+    }
+
+    template<typename T>
+    bool _DeserializeContainer(T& data)
+    {
+        uint32_t length;
+        if (!Deserialize(length))
+        {
+            return false;
+        }
+
+        data.resize(length);
+
+        for (uint32_t i = 0; i < length; i++)
+        {
+            if (!Deserialize(data[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    std::vector<uint8_t> _buffer;
+    size_t _cursor{ 0 };
+};
 
 template<>
-inline void Serialize(Context &context, const uint8_t& data)
+inline void Context::Serialize(const uint8_t& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const uint16_t& data)
+inline void Context::Serialize(const uint16_t& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const uint32_t& data)
+inline void Context::Serialize(const uint32_t& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const uint64_t& data)
+inline void Context::Serialize(const uint64_t& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const int8_t& data)
+inline void Context::Serialize(const int8_t& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const int16_t& data)
+inline void Context::Serialize(const int16_t& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const int32_t& data)
+inline void Context::Serialize(const int32_t& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const int64_t& data)
+inline void Context::Serialize(const int64_t& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const float& data)
+inline void Context::Serialize(const float& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const double& data)
+inline void Context::Serialize(const double& data)
 {
-    SerializePrimitive(context, data);
+    _SerializePrimitive(data);
 }
 
 template<>
-inline void Serialize(Context &context, const bool& data)
+inline void Context::Serialize(const bool& data)
 {
-    SerializePrimitive(context, static_cast<uint8_t>(data));
+    _SerializePrimitive(static_cast<uint8_t>(data));
 }
 
 template<>
-inline void Serialize(Context &context, const char& data)
+inline void Context::Serialize(const char& data)
 {
     uint8_t byte = *reinterpret_cast<const uint8_t*>(&data);
-    SerializePrimitive(context, byte);
+    _SerializePrimitive(byte);
 }
 
 template<typename T, typename U>
-inline void Serialize(Context &context, const std::pair<T, U>& data)
+inline void Context::Serialize(const std::pair<T, U>& data)
 {
-    Serialize(context, data.first);
-    Serialize(context, data.second);
-}
-
-template<typename T>
-inline void SerializeContainer(Context &context, const T& data)
-{
-    assert(data.size() <= std::numeric_limits<uint32_t>::max());
-
-    Serialize(context, static_cast<uint32_t>(data.size()));
-    for (const auto& element : data)
-    {
-        Serialize(context, element);
-    }
+    Serialize(data.first);
+    Serialize(data.second);
 }
 
 template<>
-inline void Serialize(Context &context, const std::string& data)
+inline void Context::Serialize(const std::string& data)
 {
-    SerializeContainer(context, data);
+    _SerializeContainer(data);
 }
 
 template<typename T>
-inline void Serialize(Context &context, const std::vector<T>& data)
+inline void Context::Serialize(const std::vector<T>& data)
 {
-    SerializeContainer(context, data);
+    _SerializeContainer(data);
 }
 
 template<typename T, typename U>
-inline void Serialize(Context &context, const std::map<T, U>& data)
+inline void Context::Serialize(const std::map<T, U>& data)
 {
-    SerializeContainer(context, data);
+    _SerializeContainer(data);
 }
 
 template<typename T, typename U>
-inline void Serialize(Context &context, const std::unordered_map<T, U>& data)
+inline void Context::Serialize(const std::unordered_map<T, U>& data)
 {
-    SerializeContainer(context, data);
+    _SerializeContainer(data);
 }
 
-template<typename T>
-inline bool DeserializePrimitive(Context &context, T& data)
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+template<>
+inline bool Context::Deserialize(uint8_t& data)
 {
-    size_t spaceRemaining = context.buffer.size() - context.cursor; 
-    if (spaceRemaining < sizeof(T))
-    {
-        return false;
-    }
-
-    data = *reinterpret_cast<T*>(&context.buffer[context.cursor]);
-    context.cursor += sizeof(T);
-
-    return true;
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, uint8_t& data)
+inline bool Context::Deserialize(uint16_t& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, uint16_t& data)
+inline bool Context::Deserialize(uint32_t& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, uint32_t& data)
+inline bool Context::Deserialize(uint64_t& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, uint64_t& data)
+inline bool Context::Deserialize(int8_t& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, int8_t& data)
+inline bool Context::Deserialize(int16_t& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, int16_t& data)
+inline bool Context::Deserialize(int32_t& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, int32_t& data)
+inline bool Context::Deserialize(int64_t& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, int64_t& data)
+inline bool Context::Deserialize(float& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, float& data)
+inline bool Context::Deserialize(double& data)
 {
-    return DeserializePrimitive(context, data);
+    return _DeserializePrimitive(data);
 }
 
 template<>
-inline bool Deserialize(Context &context, double& data)
-{
-    return DeserializePrimitive(context, data);
-}
-
-template<>
-inline bool Deserialize(Context &context, bool& data)
+inline bool Context::Deserialize(bool& data)
 {
     uint8_t tmp;
-    bool result = DeserializePrimitive(context, tmp);
+    bool result = _DeserializePrimitive(tmp);
     data = static_cast<bool>(tmp);
     return result;
 }
 
 template<>
-inline bool Deserialize(Context &context, char& data)
+inline bool Context::Deserialize(char& data)
 {
     uint8_t byte;
-    if (!DeserializePrimitive(context, byte))
+    if (!_DeserializePrimitive(byte))
     {
         return false;
     }
@@ -280,7 +355,7 @@ inline bool Deserialize(Context &context, char& data)
 }
 
 template<typename T, typename U>
-inline bool Deserialize(Context &context, std::pair<T, U>& data)
+inline bool Context::Deserialize(std::pair<T, U>& data)
 {
     if (!Deserialize(context, data.first))
     {
@@ -295,45 +370,23 @@ inline bool Deserialize(Context &context, std::pair<T, U>& data)
     return true;
 }
 
-template<typename T>
-inline bool DeserializeContainer(Context &context, T& data)
-{
-    uint32_t length;
-    if (!Deserialize(context, length))
-    {
-        return false;
-    }
-
-    data.resize(length);
-
-    for (uint32_t i = 0; i < length; i++)
-    {
-        if (!Deserialize(context, data[i]))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 template<>
-inline bool Deserialize(Context &context, std::string& data)
+inline bool Context::Deserialize(std::string& data)
 {
-    return DeserializeContainer(context, data);
+    return _DeserializeContainer(data);
 }
 
 template<typename T>
-inline bool Deserialize(Context &context, std::vector<T>& data)
+inline bool Context::Deserialize(std::vector<T>& data)
 {
-    return DeserializeContainer(context, data);
+    return _DeserializeContainer(data);
 }
 
 template<typename T, typename U>
-inline bool Deserialize(Context &context, std::map<T, U>& data)
+inline bool Context::Deserialize(std::map<T, U>& data)
 {
     uint32_t length;
-    if (!Deserialize(context, length))
+    if (!Deserialize(length))
     {
         return false;
     }
@@ -341,7 +394,7 @@ inline bool Deserialize(Context &context, std::map<T, U>& data)
     for (uint32_t i = 0; i < length; i++)
     {
         std::pair<T, U> kvPair;
-        if (!Deserialize(context, kvPair))
+        if (!Deserialize(kvPair))
         {
             return false;
         }
@@ -353,10 +406,10 @@ inline bool Deserialize(Context &context, std::map<T, U>& data)
 }
 
 template<typename T, typename U>
-inline bool Deserialize(Context &context, std::unordered_map<T, U>& data)
+inline bool Context::Deserialize(std::unordered_map<T, U>& data)
 {
     uint32_t length;
-    if (!Deserialize(context, length))
+    if (!Deserialize(length))
     {
         return false;
     }
@@ -364,7 +417,7 @@ inline bool Deserialize(Context &context, std::unordered_map<T, U>& data)
     for (uint32_t i = 0; i < length; i++)
     {
         std::pair<T, U> kvPair;
-        if (!Deserialize(context, kvPair))
+        if (!Deserialize(kvPair))
         {
             return false;
         }
