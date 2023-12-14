@@ -9,6 +9,7 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(
   tests 
+  general_test.cpp
   primitives_test.cpp
   stl_test.cpp)
 target_link_libraries(tests GTest::gtest_main cerealizer)

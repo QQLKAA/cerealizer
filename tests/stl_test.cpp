@@ -6,80 +6,87 @@ using namespace Cerealizer;
 
 TEST(StlTest, HandlesString)
 {
-    std::string a = "xyz", b;
     Context ctx;
 
-    Serialize(ctx, a);
-    ctx.cursor = 0;
-    EXPECT_TRUE(Deserialize(ctx, b));
+    std::string a = "xyz", b;
+
+    ctx.Serialize(a);
+    ctx.Rewind();
+    EXPECT_TRUE(ctx.Deserialize(b));
 
     EXPECT_EQ(a, b);
 }
 
 TEST(StlTest, HandlesEmptyString)
 {
-    std::string a = "", b = "asdf";
     Context ctx;
 
-    Serialize(ctx, a);
-    ctx.cursor = 0;
-    EXPECT_TRUE(Deserialize(ctx, b));
+    std::string a = "", b = "asdf";
+
+    ctx.Serialize(a);
+    ctx.Rewind();
+    EXPECT_TRUE(ctx.Deserialize(b));
 
     EXPECT_EQ(a, b);
 }
 
 TEST(StlTest, HandlesInvalidString)
 {
-    std::string b;
     Context ctx;
 
-    Serialize<uint32_t>(ctx, 10);
-    Serialize<char>(ctx, 'a');
-    Serialize<char>(ctx, 'b');
-    Serialize<char>(ctx, 'c');
-    ctx.cursor = 0;
+    std::string b;
 
-    EXPECT_FALSE(Deserialize(ctx, b));
+    ctx.Serialize<uint32_t>(10);
+    ctx.Serialize('a');
+    ctx.Serialize('b');
+    ctx.Serialize('c');
+    
+    ctx.Rewind();
+
+    EXPECT_FALSE(ctx.Deserialize(b));
 }
 
 TEST(StlTest, HandlesVector)
 {
-    std::vector<uint32_t> a = { 1, 2, 3 }, b;
     Context ctx;
 
-    Serialize(ctx, a);
-    ctx.cursor = 0;
-    EXPECT_TRUE(Deserialize(ctx, b));
+    std::vector<uint32_t> a = { 1, 2, 3 }, b;
+
+    ctx.Serialize(a);
+    ctx.Rewind();
+    EXPECT_TRUE(ctx.Deserialize(b));
 
     EXPECT_EQ(a, b);
 }
 
 TEST(StlTest, HandlesMap)
 {
-    std::map<std::string, int> a, b;
     Context ctx;
+
+    std::map<std::string, int> a, b;
 
     a["abc"] = 1;
     a["def"] = 2;
 
-    Serialize(ctx, a);
-    ctx.cursor = 0;
-    EXPECT_TRUE(Deserialize(ctx, b));
+    ctx.Serialize(a);
+    ctx.Rewind();
+    EXPECT_TRUE(ctx.Deserialize(b));
 
     EXPECT_EQ(a, b);
 }
 
 TEST(StlTest, HandlesUnorderedMap)
 {
-    std::unordered_map<std::string, int> a, b;
     Context ctx;
+
+    std::unordered_map<std::string, int> a, b;
 
     a["abc"] = 1;
     a["def"] = 2;
 
-    Serialize(ctx, a);
-    ctx.cursor = 0;
-    EXPECT_TRUE(Deserialize(ctx, b));
+    ctx.Serialize(a);
+    ctx.Rewind();
+    EXPECT_TRUE(ctx.Deserialize(b));
 
     EXPECT_EQ(a, b);
 }
@@ -93,12 +100,12 @@ TEST(StlTest, HandlesComposition)
 
         void Serialize(Context& context) const
         {
-            ::Serialize(context, name, quality);
+            context.Serialize(name, quality);
         }
 
         bool Deserialize(Context& context)
         {
-            return ::Deserialize(context, name, quality);
+            return context.Deserialize(name, quality);
         }
         
         bool operator==(const Item& other) const
@@ -113,12 +120,12 @@ TEST(StlTest, HandlesComposition)
 
         void Serialize(Context& context) const
         {
-            ::Serialize(context, x, y);
+            context.Serialize(x, y);
         }
 
         bool Deserialize(Context& context)
         {
-            return ::Deserialize(context, x, y);
+            return context.Deserialize(x, y);
         }
 
         bool operator==(const Vector2i& other) const
@@ -134,12 +141,12 @@ TEST(StlTest, HandlesComposition)
 
         void Serialize(Context& context) const
         {
-            ::Serialize(context, position, inventory);
+            context.Serialize(position, inventory);
         }
 
         bool Deserialize(Context& context)
         {
-            return ::Deserialize(context, position, inventory);
+            return context.Deserialize(position, inventory);
         }
 
         bool operator==(const Player& other) const
@@ -165,9 +172,9 @@ TEST(StlTest, HandlesComposition)
     };
 
     Context ctx;
-    Serialize(ctx, players_a);
-    ctx.cursor = 0;
-    EXPECT_TRUE(Deserialize(ctx, players_b));
+    ctx.Serialize(players_a);
+    ctx.Rewind();
+    EXPECT_TRUE(ctx.Deserialize(players_b));
 
     EXPECT_EQ(players_a, players_b);
 }
