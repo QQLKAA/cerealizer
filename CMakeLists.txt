@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.27)
 
-project(cerealizer VERSION 0.1 LANGUAGES CXX)
+project(cerealizer VERSION 0.1.1 LANGUAGES CXX)
 
 option(CEREALIZER_BUILD_TESTS "Build the ceralizer tests" OFF)
 
